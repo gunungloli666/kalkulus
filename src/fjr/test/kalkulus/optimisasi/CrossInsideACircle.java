@@ -15,6 +15,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+
+
+
 public class CrossInsideACircle extends  Application {
 
 	Group root; 
@@ -22,9 +25,9 @@ public class CrossInsideACircle extends  Application {
 	final double radiusLingkaran = 150; 
 	
 	double rootWidth = 700; 
-	double rootheight = 500; 
+	double rootheight = 400; 
 	
-	double canvasHeight =500; 
+	double canvasHeight = rootheight; 
 	double canvasWidth = 700; 
 
 	
@@ -32,6 +35,11 @@ public class CrossInsideACircle extends  Application {
 	GraphicsContext gc2 ; 
 	
 	Cross mainCross; 
+	
+	double curvaPLotSudut[]; 
+	double curvaPlotLuas[]; 
+	
+	int numArrayCurvaPlot = 400; 
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -57,10 +65,14 @@ public class CrossInsideACircle extends  Application {
 		
 		primaryStage.setScene(sc); 
 
+		curvaPLotSudut = new double[numArrayCurvaPlot]; 
+		curvaPlotLuas = new double[numArrayCurvaPlot]; 
+		
 		initCross(); 
 		repaint(gc, mainCross );
 		
 		root.getChildren().add(getControl());
+		
 		
 		
 		primaryStage.show();
@@ -97,6 +109,23 @@ public class CrossInsideACircle extends  Application {
 	private void initCross(){
 		Cross cross = new Cross(180,200, Math.PI/4.0); 
 		this.mainCross = cross; 
+		
+		double step = Math.PI/2.0 / numArrayCurvaPlot; 
+		
+		
+		double sudut_ = 0; 
+		for(int i=0; i < curvaPLotSudut.length; i++){
+			cross.setSudut(sudut_); 
+			curvaPLotSudut[i] = sudut_; 
+			curvaPlotLuas[i] = cross.getLuasCross(); 
+//			System.out.println(curvaPLot)
+			sudut_+= step; 
+		}		
+	}
+	
+	
+	static double getTemporarySudut(double sudut){
+		return  ( Math.PI/2.0  - sudut )/ 2.0 ;
 	}
 	
 	
@@ -193,7 +222,7 @@ public class CrossInsideACircle extends  Application {
 			
 //			this.sudut = convertToRadian(sudut); 
 			this.sudut = sudut; 
-			this.temporarySudut = ( Math.PI/2.0  - sudut )/ 2.0 ; 
+			this.temporarySudut =  CrossInsideACircle.getTemporarySudut(sudut) ; 
 			
 			panjangCross =  radiusLingkaran * Math.cos(temporarySudut) -  
 					radiusLingkaran * Math.sin(temporarySudut); 
@@ -404,11 +433,29 @@ public class CrossInsideACircle extends  Application {
 		gc.strokeLine(anchorX , anchorY, anchorX + deltaX, anchorY); // horizontal
 		gc.strokeLine( anchorX, anchorY, anchorX, anchorY - deltaY);  // vertical
 		
-		double luas = cross.getLuasCross()/ 45000.0 * deltaY; 
-		double sudut = cross.getSudut()/ (Math.PI/2.0) * deltaX ; 
+		double luas = getScaleLuas(cross.getLuasCross()); 
+		double sudut = getScaleSudut(cross.getSudut()); 
+		
 		gc.setStroke(Color.BLACK);
 		gc.setLineWidth(4);
 		gc.strokeLine(anchorX + sudut , anchorY, anchorX+ sudut , anchorY - luas); 
+		
+		//tampilkan trace curva luas sebagai fungsi sudut.. 
+		gc.setFill(Color.LIGHTBLUE);
+		for(int i=0; i<curvaPLotSudut.length ;i++){
+			double luas_1 = getScaleLuas(curvaPlotLuas[i]); 
+			double sudut_1 = getScaleSudut(curvaPLotSudut[i]); 
+			gc.fillOval(anchorX+ sudut_1, anchorY - luas_1,2, 2);
+		}
+	}
+	
+	
+	public double getScaleLuas(double luas){
+		return luas / 60000 * deltaY; 
+	}
+	
+	public double getScaleSudut(double sudut){
+		return 	sudut/ (Math.PI/2.0) * deltaX ; 
 	}
 	
 
